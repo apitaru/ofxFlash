@@ -208,11 +208,11 @@ ofBaseDraws* ofxFlashLibrary :: getAsset ( string assetID )
 {
 	for( int i=0; i<items.size(); i++ )
 	{
-		ofxFlashLibraryItem& item = *items[ i ];
+		ofxFlashLibraryItem* item = items[ i ]; // AP: I think there's no need to dereference the objects. Just use pointers. Unless I'm missing something. True for all getXXX funcd here
 		
-		if( item.assetID == assetID )
+		if( item->assetID == assetID )
 		{
-			return item.imageAsset;
+			return item->imageAsset;
 		}
 	}
 	
@@ -226,11 +226,11 @@ ofBaseDraws* ofxFlashLibrary :: getAssetByFileName ( string fileName )
 	
 	for( int i=0; i<items.size(); i++ )
 	{
-		ofxFlashLibraryItem& item = *items[ i ];
+		ofxFlashLibraryItem* item = items[ i ];
 		
-		if( item.assetPath == fileName )
+		if( item->assetPath == fileName )
 		{
-			return item.imageAsset;
+			return item->imageAsset;
 		}
 	}
 	
@@ -261,8 +261,10 @@ ofxFlashMovieClip* ofxFlashLibrary :: createMovieClipWithLinkageClassName ( stri
             break;
         }
     }
-    
-    container->addFrameChildren();  // initialise the first frame.
+//	container->gotoAndPlay(1);
+	//container->gotoAndStop(1);
+	container->updateOnFrame();
+    //container->addFrameChildren();  // initialise the first frame.
     
     return container;
 }

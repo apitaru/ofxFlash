@@ -11,6 +11,7 @@
 
 #include "ofxFlashInteractiveObject.h"
 
+
 class ofxFlashDisplayObjectContainer : public ofxFlashInteractiveObject
 {
 
@@ -27,9 +28,15 @@ public:
 	
 	int                 numChildren ();
 	
+	//int _numLayers;
+	
 	vector<ofxFlashDisplayObject*>	children;
 	
-	virtual ofxFlashDisplayObject*			addChild				( ofxFlashDisplayObject* child );
+	void addTimelineData ( int offsetFromKeyframe);
+	int _offsetFromKeyframe;
+
+	
+	virtual ofxFlashDisplayObject*			addChild				( ofxFlashDisplayObject* child);
 	virtual ofxFlashDisplayObject*			addChildAt				( ofxFlashDisplayObject* child, int index );
 	virtual bool							contains				( ofxFlashDisplayObject* child );
 	virtual ofxFlashDisplayObject*			getChildAt				( int index );
@@ -38,7 +45,7 @@ public:
 	virtual vector<ofxFlashDisplayObject*>	getObjectsUnderPoint	( ofPoint point );
 	virtual ofxFlashDisplayObject*			removeChild				( ofxFlashDisplayObject* child );
 	virtual ofxFlashDisplayObject*			removeChildAt			( int index );
-    virtual void                            removeAllChildren       ();
+    virtual void                            removeAllChildren       ( int layerIndex = 0);
 	virtual void							setChildIndex			( ofxFlashDisplayObject* child, int index );
 	virtual void							swapChildren			( ofxFlashDisplayObject* child1, ofxFlashDisplayObject* child2 );
 	virtual void							swapChildrenAt			( int index1, int index2 );

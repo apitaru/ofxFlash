@@ -39,6 +39,7 @@ ofxFlashDisplayObject :: ofxFlashDisplayObject ()
 	mask		= NULL;
 	parent		= NULL;
 	stage		= NULL;
+	_layerIndex = 0;
 }
 
 ofxFlashDisplayObject :: ~ofxFlashDisplayObject ()

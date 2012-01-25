@@ -10,6 +10,7 @@
 #pragma once
 
 #include "ofxFlashSprite.h"
+#include "ofxFlashDomStructs.h";
 
 /** 
  *  Forward Declarations to prevent Cyclic Dependency.
@@ -19,9 +20,17 @@ class ofxFlashXFLBuilder;
 class ofxFlashLibrary;
 
 
+
+struct layerStruct{
+	vector<ofxFlashDisplayObjectContainer*>	frames;
+};
+struct timeLineStruct {
+	vector <layerStruct *> layers;
+};
+
 class ofxFlashMovieClip : public ofxFlashSprite
 {
-
+	
 public:
 	
 	 ofxFlashMovieClip();
@@ -46,69 +55,92 @@ public:
 	int currentFrame	();
     
     //------------------------------------------------------------------- display object container override.
-    ofxFlashDisplayObject* addChild ( ofxFlashDisplayObject* child ) {
-        return frame->addChild( child );
+    ofxFlashDisplayObject* addChild ( ofxFlashDisplayObject* child, int layerIndex = 0) {
+		resetTimeline = true;
+        return timeline.layers[layerIndex]->frames[frameIndex]->addChild( child );
     }
+	
+    void addTimelineDataToChild ( int offsetFromKeyframe, int layerIndex ) {
+		timeline.layers[layerIndex]->frames[frameIndex]->addTimelineData( offsetFromKeyframe);
+    }
+	
     
-    ofxFlashDisplayObject* addChildAt ( ofxFlashDisplayObject* child, int index ) {
-        return frame->addChildAt( child, index );
+    ofxFlashDisplayObject* addChildAt ( ofxFlashDisplayObject* child, int index, int layerIndex = 0 ) {
+        return timeline.layers[layerIndex]->frames[frameIndex]->addChildAt( child, index );
     }
     
     bool contains ( ofxFlashDisplayObject* child ) {
-        return frame->contains( child );
+		for(int i = 0; i < timeline.layers.size() -1; i++)
+		{
+			if (  timeline.layers[i]->frames[frameIndex]->contains( child )) {
+				return true;
+			}
+		}
+		return false;
     }
     
     ofxFlashDisplayObject* getChildAt ( int index ) {
-        return frame->getChildAt( index );
+		return ofxFlashDisplayObjectContainer :: getChildAt( index );
     }
     
     ofxFlashDisplayObject* getChildByName ( string name ) {
-        return frame->getChildByName( name );
+        return ofxFlashDisplayObjectContainer :: getChildByName( name );
     }
     
     int	getChildIndex ( ofxFlashDisplayObject* child ) {
-        return frame->getChildIndex( child );
+        return ofxFlashDisplayObjectContainer :: getChildIndex( child );
     }
     
     vector<ofxFlashDisplayObject*> getObjectsUnderPoint ( ofPoint point ) {
-        return frame->getObjectsUnderPoint( point );
+        return ofxFlashDisplayObjectContainer :: getObjectsUnderPoint( point );
     }
     
     ofxFlashDisplayObject* removeChild ( ofxFlashDisplayObject* child ) {
-        return frame->removeChild( child );
+        return ofxFlashDisplayObjectContainer :: removeChild( child );
     }
     
     ofxFlashDisplayObject* removeChildAt ( int index ) {
-        return frame->removeChildAt( index );
+        return ofxFlashDisplayObjectContainer :: removeChildAt( index );
     }
     
     void setChildIndex ( ofxFlashDisplayObject* child, int index ) {
-        frame->setChildIndex( child, index );
+       ofxFlashDisplayObjectContainer :: setChildIndex( child, index );
     }
     
     void swapChildren ( ofxFlashDisplayObject* child1, ofxFlashDisplayObject* child2 ) {
-        frame->swapChildren( child1, child2 );
+       ofxFlashDisplayObjectContainer :: swapChildren( child1, child2 );
     }
     
     void swapChildrenAt	( int index1, int index2 ) {
-        frame->swapChildrenAt( index1, index2 );
+       ofxFlashDisplayObjectContainer :: swapChildrenAt( index1, index2 );
     }
+	//void addDOMFrameToTimeline(DOMFrame * domFrame);
+	bool isThisFrameContinual(ofxFlashDisplayObjectContainer * lastFrame, ofxFlashDisplayObjectContainer * thisFrame);
 	
+	int createNewLayer();
+	virtual void updateOnFrame	();
+
 protected:
 	
-	virtual void updateOnFrame	();
 	
 private:
     
-	void setTotalFrames	( int totalFrames = 1 );
+	void setTotalFrames	( int layerIndex, int totalFrames );
 	
-	void addFrameChildren		();
-	void removeFrameChildren	();
+	void addFrameChildren		(int layerIndex = 0);
+	void removeFrameChildren	(int layerIndex = 0);
 	
-	vector<ofxFlashDisplayObjectContainer*>	frames;
-	ofxFlashDisplayObjectContainer*			frame;
+	//vector<DOMFrame *> timelineDOMFrames;
+	
+	timeLineStruct timeline;	
+	layerStruct * layer;
+	//ofxFlashDisplayObjectContainer*			frame;
+	vector <ofxFlashDisplayObjectContainer *> lastTreatedObj;
 	
 	int		frameIndex;
 	bool	bPlay;
+	bool    resetTimeline;
+	bool firstRun;
+	int lastFrameIndex;
 	
 };

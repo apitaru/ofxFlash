@@ -21,6 +21,9 @@ ofxFlashDisplayObjectContainer :: ofxFlashDisplayObjectContainer()
 	_mouseChildren		= true;
 	_tabChildren		= false;
 	_numChildren		= 0;
+	_offsetFromKeyframe = 0;
+	//_numLayers = 0;
+	//_layerIndex = -1;
 }
 
 ofxFlashDisplayObjectContainer :: ~ofxFlashDisplayObjectContainer()
@@ -98,7 +101,7 @@ int ofxFlashDisplayObjectContainer :: numChildren ()
 //	DISPLAY OBJECT CONTAINER METHODS.
 ///////////////////////////////////////////////
 
-ofxFlashDisplayObject* ofxFlashDisplayObjectContainer :: addChild ( ofxFlashDisplayObject* child )
+ofxFlashDisplayObject* ofxFlashDisplayObjectContainer :: addChild ( ofxFlashDisplayObject* child)
 {
     if( child->parent )     // child is already added to another parent.
         ( (ofxFlashDisplayObjectContainer*)( child->parent ) )->removeChild( child );   // remove it from parent.
@@ -108,6 +111,15 @@ ofxFlashDisplayObject* ofxFlashDisplayObjectContainer :: addChild ( ofxFlashDisp
 	child->parent	= this;
 	child->level( this->level() + 1 );
 }
+
+void ofxFlashDisplayObjectContainer :: addTimelineData ( int offsetFromKeyframe )
+{
+    _offsetFromKeyframe = offsetFromKeyframe;
+}
+
+
+
+
 
 ofxFlashDisplayObject* ofxFlashDisplayObjectContainer :: addChildAt ( ofxFlashDisplayObject* child, int index )
 {
@@ -146,14 +158,16 @@ ofxFlashDisplayObject* ofxFlashDisplayObjectContainer :: getChildAt ( int index 
 
 ofxFlashDisplayObject* ofxFlashDisplayObjectContainer :: getChildByName ( string name )
 {
+	//cout << "looking for : "<< name << " in " << this->name() << endl;
 	for( int i=0; i<children.size(); i++ )
 	{
+	//	cout << "child: " << children[i]->name() << endl;
 		if( children[ i ]->name() == name )
 		{
 			return children[ i ];
 		}
 	}
-	
+	//cout << "cant find child by name: " << name << endl;
 	return NULL;
 }
 
@@ -210,24 +224,31 @@ ofxFlashDisplayObject* ofxFlashDisplayObjectContainer :: removeChildAt ( int ind
 	return child;
 }
 
-void ofxFlashDisplayObjectContainer :: removeAllChildren ()
+void ofxFlashDisplayObjectContainer :: removeAllChildren (int layerIndex )
 {
     int i = 0;
     int t = children.size();
     
     ofxFlashDisplayObject* child;
-    
+ //   cout << "layerIndex: " << endl;
     for( i; i<t; i++ )
     {
-        child           = children[ i ];
-        child->stage	= NULL;
-        child->parent	= NULL;
-        child->level( -1 );
-        
-        children.erase( children.begin() + i );
-        
-        --i;
-        --t;
+
+		//	cout << "foundChild"<< endl;
+			child           = children[ i ];
+		if(child->_layerIndex == layerIndex)
+		{
+			child->stage	= NULL;
+			child->parent	= NULL;
+			child->level( -1 );
+			child->_layerIndex = -1;
+			if(child->typeID == OFX_FLASH_TYPE_MOVIECLIP)  ((ofxFlashMovieClip *)child)->stop();// gotoAndStop(1);
+			children.erase( children.begin() + i );
+			--i;
+			--t;
+		//	cout << "childRemoved" << endl;
+		}
+		
     }
 }
 

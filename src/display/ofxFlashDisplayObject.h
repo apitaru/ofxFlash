@@ -116,6 +116,8 @@ public:
 	const int&				level ();
 	void					level ( int value );
 	
+	int _layerIndex;
+	
 	const ofxFlashMatrix&		matrix				();
 	void						matrix				( const ofxFlashMatrix& mat );
 	
@@ -142,10 +144,10 @@ public:
 //	TODO :: cacheAsBitmap - maybe this can be an FBO?
 //	TODO :: transform :: http://livedocs.adobe.com/flex/3/langref/flash/geom/Transform.html
 //	TODO :: events - added, addedToStage, enterFrame, exitFrame, frameConstructed, removed, removedFromStage, render
-	
+	virtual void updateOnFrame	() {};		// updateOnFrame is called on every update loop by stage. any updates should go in there.
+
 protected:
 	
-	virtual void updateOnFrame	() {};		// updateOnFrame is called on every update loop by stage. any updates should go in there.
 	virtual void drawOnFrame	() {};		// drawOnFrame is called on every draw loop by stage.
 	
 	ofxFlashMatrix		_matrix;

@@ -16,69 +16,12 @@
 #include "ofxFlashShape.h"
 #include "ofxXmlSettings.h"
 
-#define DOM_DOCUMENT_TYPE		"DOMDocument"
-#define DOM_SYMBOL_ITEM_TYPE	"DOMSymbolItem"
+
 
 //====================================================
-
-struct DOMTimeline
-{
-	string	name;
-	int		currentFrame;
-};
-
-struct DOMLayer
-{
-	string	name;
-	int		color;
-	bool	locked;
-	bool	current;
-	bool	isSelected;
-	bool	autoNamed;
-	string	layerType;
-};
-
-struct DOMFrame
-{
-	int		index;
-	int		duration;
-	string	tweenType;
-	bool	motionTweenSnap;
-	int		keyMode;
-};
-
-struct DOMSymbolInstance
-{
-	string	libraryItemName;
-	string	name;
-	float	centerPoint3DX;
-	float	centerPoint3DY;
-};
-
-struct DOMBitmapInstance
-{
-	string	libraryItemName;
-	string	name;
-	string	referenceID;
-};
-
-struct DOMRectangleObject
-{
-	float	x;
-	float	y;
-	float	objectWidth;
-	float	objectHeight;
-};
-
-struct DOMOvalObject
-{
-	float	x;
-	float	y;
-	float	objectWidth;
-	float	objectHeight;
-	float	endAngle;
-};
-
+#include "ofxFlashDomStructs.h";
+#define DOM_DOCUMENT_TYPE		"DOMDocument"
+#define DOM_SYMBOL_ITEM_TYPE	"DOMSymbolItem"
 //====================================================
 
 class ofxFlashXFLBuilder : public ofxXmlSettings
@@ -102,6 +45,7 @@ private:
 	string	xflFile;
 	string	domType;
 	int		totalFrames;
+	int activeLayerIndex;
 	
 	DOMTimeline			domTimeline;
 	DOMLayer			domLayer;
@@ -126,6 +70,8 @@ private:
 	void setupColorForDisplayObject		( ofxFlashDisplayObject* displayObject );
 	void setupFillForShape				( ofxFlashShape* shape );
 	void setupStrokeForShape			( ofxFlashShape* shape );
+	
+	void addTimelineDataToFrames ();
 	
 	void pushTagAt			( int i );
 	

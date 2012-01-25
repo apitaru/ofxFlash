@@ -11,7 +11,7 @@
 
 ofxFlashXFLBuilder :: ofxFlashXFLBuilder()
 {
-    bVerbose    = false;
+    bVerbose    = true;
 
     xflRoot     = "";
 	xflFile		= "";
@@ -65,15 +65,15 @@ void ofxFlashXFLBuilder :: build ( const string& root, const string& file, ofxFl
 		
 		countTotalFrames();
 		
-		ofxFlashMovieClip* mc;
-		mc = (ofxFlashMovieClip*)container;
-		mc->setTotalFrames( totalFrames );
+
 		
 		buildTimelines();
+		//cout << "AP Total Frames: " << totalFrames << endl;
 		
 		popTag();
 		popTag();
 	}
+	// cout << "XXXXXXXXXXXXDONE" << endl;
 }
 
 void ofxFlashXFLBuilder :: countTotalFrames ()
@@ -159,6 +159,7 @@ void ofxFlashXFLBuilder :: buildLayers ()
 		dom.isSelected	= getAttribute( "DOMLayer", "isSelected",	false,  i );
 		dom.autoNamed	= getAttribute( "DOMLayer", "autoNamed",	false,  i );
 		dom.layerType	= getAttribute( "DOMLayer", "layerType",	"",		i );
+		domLayer.index = i;
 		domLayer		= dom;
 		
 		if( domLayer.layerType == "guide" )		// skip guide layers.
@@ -166,12 +167,19 @@ void ofxFlashXFLBuilder :: buildLayers ()
 		
 		pushTag( "DOMLayer", i );
 		pushTag( "frames", 0 );
+		// cout << "XXXXXXXXXXXXXXX" << endl;
+		activeLayerIndex = 		((ofxFlashMovieClip *)container)->createNewLayer();
+		
+		ofxFlashMovieClip* mc;
+		mc = (ofxFlashMovieClip*)container;
+		mc->setTotalFrames( activeLayerIndex, totalFrames );
 		
 		buildFrames();
 		
 		popTag();
 		popTag();
 	}
+	
 }
 
 void ofxFlashXFLBuilder :: buildFrames ()
@@ -179,23 +187,34 @@ void ofxFlashXFLBuilder :: buildFrames ()
 	int numOfFrames;
 	numOfFrames = getNumTags( "DOMFrame" );
 	
+	ofxFlashMovieClip* containerMc;
+	containerMc = (ofxFlashMovieClip*)container;
+	
 	for( int i=0; i<numOfFrames; i++ )
 	{
-		DOMFrame dom;
-		dom.index			= getAttribute( "DOMFrame", "index",			0,		i );
-		dom.duration		= getAttribute( "DOMFrame", "duration",			1,		i );
-		dom.tweenType		= getAttribute( "DOMFrame", "tweenType",		"",		i );
-		dom.motionTweenSnap	= getAttribute( "DOMFrame", "motionTweenSnap",	false,	i );
-		dom.keyMode			= getAttribute( "DOMFrame", "keyMode",			0,		i );
-		domFrame			= dom;
+		DOMFrame * dom = new DOMFrame();
+		dom->index			= getAttribute( "DOMFrame", "index",			0,		i );
+		dom->duration		= getAttribute( "DOMFrame", "duration",			1,		i );
+		dom->tweenType		= getAttribute( "DOMFrame", "tweenType",		"",		i );
+		dom->motionTweenSnap	= getAttribute( "DOMFrame", "motionTweenSnap",	false,	i );
+		dom->keyMode			= getAttribute( "DOMFrame", "keyMode",			0,		i );
+		domFrame			=  *dom;
 		
 		pushTag( "DOMFrame", i );
 		pushTag( "elements", 0 );
-		
+	//	cout << "AP buildFrames > frame index: " << dom.index << endl;
+	//	cout << "AP buildFrames > frame duration: " << dom.duration << endl;
+	//	cout << "AP buildFrames > frame keyMode: " << dom.keyMode << endl;		
 		buildElements();
+				// cout << "XXXXXXXXXXXXXX1" << endl;
+			addTimelineDataToFrames();	
+				// cout << "XXXXXXXXXXXXXXX2" << endl;
+		popTag();
+		popTag();
 		
-		popTag();
-		popTag();
+	//	containerMc->addDOMFrameToTimeline(dom);
+
+
 	}
 }
 
@@ -469,14 +488,33 @@ void ofxFlashXFLBuilder :: addDisplayObjectToFrames ( ofxFlashDisplayObject* dis
     
 	int i = domFrame.index;
 	int t = domFrame.index + domFrame.duration;
-	for( i; i<t; i++ )
-	{
+//	for( i; i<t; i++ )
+//	{
         containerMc->gotoAndStop( i + 1 );
-		containerMc->addChild( displayObject );
-	}
+		containerMc->addChild( displayObject, activeLayerIndex );
+//	}
     
     containerMc->gotoAndPlay( 1 );
+	//	cout << "adding MC to frames: " << displayObject->name() << " " << i + 1 <<  endl;
+
 }
+
+void ofxFlashXFLBuilder :: addTimelineDataToFrames ( )
+{
+    ofxFlashMovieClip* containerMc;
+    containerMc = (ofxFlashMovieClip*)container;
+    
+	int i = domFrame.index;
+	int t = domFrame.index + domFrame.duration;
+	for( i; i<t; i++ )
+	{
+		containerMc->gotoAndStop( i + 1 );
+		containerMc->addTimelineDataToChild( i - domFrame.index ,  activeLayerIndex); // offsetFromKeyFrame, layerIndex
+		// 9 10 11 
+	}
+	containerMc->gotoAndPlay(1);
+}
+
 
 void ofxFlashXFLBuilder :: setupMatrixForDisplayObject ( ofxFlashDisplayObject* displayObject )
 {
