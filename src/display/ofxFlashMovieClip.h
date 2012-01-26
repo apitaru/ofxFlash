@@ -10,7 +10,7 @@
 #pragma once
 
 #include "ofxFlashSprite.h"
-#include "ofxFlashDomStructs.h";
+#include "ofxFlashDomStructs.h"
 
 /** 
  *  Forward Declarations to prevent Cyclic Dependency.
@@ -120,6 +120,7 @@ public:
 	int createNewLayer();
 	virtual void updateOnFrame	();
 
+	void readTimelineIntoThis(int layerIndex);
 protected:
 	
 	

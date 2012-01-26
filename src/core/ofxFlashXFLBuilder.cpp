@@ -533,7 +533,7 @@ void ofxFlashXFLBuilder :: setupMatrixForDisplayObject ( ofxFlashDisplayObject* 
 		matrix.set( a, b, c, d, tx, ty );
 		
 		displayObject->matrix( matrix );
-		
+		displayObject->originalMatrix(matrix);
 		popTag();
 	}
 }

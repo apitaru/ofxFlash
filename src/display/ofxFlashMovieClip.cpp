@@ -95,7 +95,7 @@ int ofxFlashMovieClip :: createNewLayer (){
 
 void ofxFlashMovieClip :: updateOnFrame ()
 {
-
+	
 	//	// cout << "n: <" <<libraryItemName() << "> " ;
 	//	// cout <<  "c: <" << children.size() << ">  |  "; 
 	
@@ -109,42 +109,19 @@ void ofxFlashMovieClip :: updateOnFrame ()
 	 */
 	if(frameIndex != lastFrameIndex || firstRun || resetTimeline)
 	{
-
+		
 		//// cout << frameIndex << " " << lastFrameIndex << endl;
-
-		for(int l = 0; l < timeline.layers.size() ; l++)
+		//	cout <<  timeline.layers.size() << endl;
+		for(int l = 1; l < timeline.layers.size() ; l++)
+			//for(int l = timeline.layers.size() ; l >0; l--)
 		{
-			if(timeline.layers[l]->frames.size() > frameIndex)
-			{
-				ofxFlashDisplayObjectContainer * frame  = timeline.layers[l]->frames[frameIndex];	
-				
-				//	// cout << frame->_offsetFromKeyframe  << " " << isThisFrameContinual(lastTreatedObj[l], frame) << " | " ;
-				if(frame->_offsetFromKeyframe == 0)
-				{
-					bool b = isThisFrameContinual(lastTreatedObj[l], frame);
-					if (!b || firstRun == true || resetTimeline == true)
-					{
-						// cout << "firstRun: " << name() << endl;
-						removeFrameChildren(l);
-						addFrameChildren(l);
-					} else if (b == true && l != 0) {
-						// cout << "applyMatrixToContinualMC" << endl;
-						// cout << "this is: " << name() << endl;
-						ofxFlashDisplayObject * targetChild = frame->children[0];
-						// cout << "targetChild name: " << targetChild->name() << endl;
-						// cout << "targetChild type: " << targetChild->typeID << endl;
-						ofxFlashDisplayObject * targetOnStage = ((ofxFlashMovieClip*)(this)->getChildByName(targetChild->name()));
-						// cout << "targetOnStage: " << targetOnStage->name() << endl;
-						targetOnStage->matrix( targetChild->matrix() ) ;
-					}
-				}
-				lastTreatedObj[l] = timeline.layers[l]->frames[frameIndex];
-			}
-		}
-				resetTimeline = false;
+			readTimelineIntoThis(l);
+		}				
+		readTimelineIntoThis(0);
+		resetTimeline = false;
+		
+		
 	}
-	
-
 	lastFrameIndex = frameIndex;	
 	
 	if( bPlay )
@@ -153,6 +130,49 @@ void ofxFlashMovieClip :: updateOnFrame ()
 	}
 	firstRun = false; // make this per layer!!!!!
 	
+}
+
+
+void ofxFlashMovieClip :: readTimelineIntoThis(int layerIndex) 
+{
+	int l = layerIndex;
+	if(timeline.layers[l]->frames.size() > frameIndex)
+	{
+		ofxFlashDisplayObjectContainer * frame  = timeline.layers[l]->frames[frameIndex];	
+		
+		//	// cout << frame->_offsetFromKeyframe  << " " << isThisFrameContinual(lastTreatedObj[l], frame) << " | " ;
+		if(frame->_offsetFromKeyframe == 0)
+		{
+			bool b = isThisFrameContinual(lastTreatedObj[l], frame);
+			if (!b || firstRun == true || resetTimeline == true)
+			{
+				// cout << "firstRun: " << name() << endl;
+				removeFrameChildren(l);
+				//cout << l << endl;
+				addFrameChildren(l);
+				
+			} else if (b == true && l != 0) {
+				
+				ofxFlashDisplayObject * targetChild = frame->children[0];
+				ofxFlashDisplayObject * targetOnStage = ((ofxFlashMovieClip*)(this)->getChildByName(targetChild->name()));
+				targetOnStage->matrix( targetChild->matrix() ); // NO GOOD! WE're erasing the original matrix! OOOOOF! Create a vec inside objects and build a tweening system. have the xflbuilder create a tween in the first object instead of copying it over multiple time. then play the tween here (will also save the 'is this a continual frame' issue)
+				if(frameIndex == 0) targetOnStage->matrix( targetChild->originalMatrix() ); // OH NO THIS IS EVEN WORST!!!
+				/*
+				 OK OK, here's what we're doing next: 
+				 xflbuilder learns about continual frames and tells the container who's the keyframe. 
+				 we might even store a vec of the matrices in the array on that container, which will also be helpful for tweening.
+				 
+				 and oh - indexing is also a mess. adding things manually is a hack (see the h file for addChild). 
+				 
+				 
+				 */
+				targetOnStage->_layerIndex = l;
+				if (l != 0) setChildIndex(targetOnStage, l - 1);
+				cout << "frame: " << frameIndex << " name: " << targetOnStage->name() << " " << targetOnStage->_layerIndex << endl;
+			}
+		}
+		lastTreatedObj[l] = timeline.layers[l]->frames[frameIndex];
+	}
 }
 
 bool ofxFlashMovieClip :: isThisFrameContinual(ofxFlashDisplayObjectContainer * lastFrame, ofxFlashDisplayObjectContainer * thisFrame) 
@@ -181,34 +201,35 @@ bool ofxFlashMovieClip :: isThisFrameContinual(ofxFlashDisplayObjectContainer * 
 
 void ofxFlashMovieClip :: addFrameChildren (int layerIndex)
 {
-
+	
 	// cout << "ADDFRAMECHILDREN " <<  name() << endl;
 	ofxFlashDisplayObjectContainer * frame  = timeline.layers[layerIndex]->frames[frameIndex];
 	for( int i=0; i< frame->children.size(); i++ )
 	{
-
-
+		
+		
         ofxFlashDisplayObject *child;
         child = frame->children[ i ];
-			// the child must be added manually, instead of using the addChild() method.
-			// doing it this way ensures the child is not removed from the frames.
-			// a movieclip can technically be added to only one parent, 
-			// and as soon it is added to another it is removed from the previous parent.
-			// with movieclip frames this is an exception and therefore movieclips have to be added like the below.
-			
-			children.push_back( child );
-			child->stage	= this->stage;
-			child->parent	= this;
-			child->level( this->level() + 1 );
-		    child->_layerIndex = layerIndex;
-			
-		    child->updateOnFrame();
-			if(child->typeID == OFX_FLASH_TYPE_MOVIECLIP) 
-			{
-				((ofxFlashMovieClip *)child)->gotoAndPlay(1);
+		// the child must be added manually, instead of using the addChild() method.
+		// doing it this way ensures the child is not removed from the frames.
+		// a movieclip can technically be added to only one parent, 
+		// and as soon it is added to another it is removed from the previous parent.
+		// with movieclip frames this is an exception and therefore movieclips have to be added like the below.
+		
+		children.push_back( child );
+		child->stage	= this->stage;
+		child->parent	= this;
+		child->level( this->level() + 1 );
+		child->_layerIndex = layerIndex;
+		if (layerIndex != 0) setChildIndex(child, layerIndex - 1);
+	//	cout << child->name() << " " << child->_layerIndex << " "  << layerIndex << endl;
+		child->updateOnFrame();
+		if(child->typeID == OFX_FLASH_TYPE_MOVIECLIP) 
+		{
+			((ofxFlashMovieClip *)child)->gotoAndPlay(1);
 			//	// cout <<"CHILD ADDED: " << ((ofxFlashMovieClip *)child)->name() <<  " " << 			child->libraryItemName() <<" in " << this->name() << endl;		
-			}
-			// cout << "CHILD ADDED: " << ((ofxFlashMovieClip *)child)->name() <<  " " << 			child->libraryItemName() <<" in " << this->name() << endl;	
+		}
+		// cout << "CHILD ADDED: " << ((ofxFlashMovieClip *)child)->name() <<  " " << 			child->libraryItemName() <<" in " << this->name() << endl;	
 	}
 }
 

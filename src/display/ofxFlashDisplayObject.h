@@ -121,6 +121,9 @@ public:
 	const ofxFlashMatrix&		matrix				();
 	void						matrix				( const ofxFlashMatrix& mat );
 	
+	const ofxFlashMatrix&		originalMatrix				();
+	void						originalMatrix				( const ofxFlashMatrix& mat );
+	
 	const ofxFlashMatrix&		concatenatedMatrix	();
 	
 	const ofxFlashRectangle&	pixelBounds			();
@@ -150,7 +153,7 @@ protected:
 	
 	virtual void drawOnFrame	() {};		// drawOnFrame is called on every draw loop by stage.
 	
-	ofxFlashMatrix		_matrix;
+	ofxFlashMatrix		_matrix;	
 	ofxFlashMatrix		_concatenatedMatrix;
 	ofxFlashMatrix		_concatenatedMatrixInv;
 	ofxFlashRectangle	_rect;
@@ -158,6 +161,8 @@ protected:
 	ofxFlashRectangle	_pixelBounds;
     
     ofxFlashTransform   _transform;
+	
+    ofxFlashMatrix   _originalMatrix;
 	
 private:
 	

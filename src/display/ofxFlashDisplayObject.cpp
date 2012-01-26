@@ -398,6 +398,23 @@ void ofxFlashDisplayObject :: matrix( const ofxFlashMatrix& mat )
 	_rotation	= mat.get_rotation() * RAD_TO_DEG;
 }
 
+void ofxFlashDisplayObject :: originalMatrix( const ofxFlashMatrix& mat )
+{
+	_originalMatrix = mat;
+	
+	_x			= mat.getTx();
+	_y			= mat.getTy();
+	_scaleX		= mat.get_x_scale();
+	_scaleY		= mat.get_y_scale();
+	_rotation	= mat.get_rotation() * RAD_TO_DEG;
+}
+
+
+const ofxFlashMatrix& ofxFlashDisplayObject :: originalMatrix()
+{
+	return _originalMatrix;
+}
+
 //============================================================= CONCATENATED MATRIX.
 
 const ofxFlashMatrix& ofxFlashDisplayObject :: concatenatedMatrix ()
