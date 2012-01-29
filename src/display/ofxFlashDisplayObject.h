@@ -164,6 +164,8 @@ protected:
 	
     ofxFlashMatrix   _originalMatrix;
 	
+
+	
 private:
 	
 	void resetPixelBounds	();

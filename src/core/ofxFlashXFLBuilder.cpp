@@ -11,7 +11,7 @@
 
 ofxFlashXFLBuilder :: ofxFlashXFLBuilder()
 {
-    bVerbose    = true;
+    bVerbose    = false;
 
     xflRoot     = "";
 	xflFile		= "";
@@ -148,6 +148,7 @@ void ofxFlashXFLBuilder :: buildLayers ()
 {
 	int numOfLayers;
 	numOfLayers = getNumTags( "DOMLayer" );
+	lastKeyFrameDisplayObject = NULL;
 	
 	for( int i=numOfLayers-1; i>=0; i-- )	// work backwards through layers. so when adding to stage, objects sit in right order.
 	{
@@ -364,13 +365,27 @@ void ofxFlashXFLBuilder :: buildMovieClip ()
 	
 	addDisplayObjectToFrames( mc );
 	
-	ofxFlashXFLBuilder* builder;
-	builder = new ofxFlashXFLBuilder();
-    builder->setVerbose( bVerbose );
-	builder->build( xflRoot, libraryItemPath, mc );
+	// Optimization for MC's that repeate on timeline (and are ignore in Flash IDE)
+	// If you find'em, assume their children are similar to the previus mc. Avoid the whole building process.
+	if(lastKeyFrameDisplayObject != NULL  &&
+	   mc->libraryItemName() == lastKeyFrameDisplayObject->libraryItemName() && 
+	   mc->name() == lastKeyFrameDisplayObject->name())
+	{
+		mc->timeline = lastKeyFrameDisplayObject->timeline;
+		cout << "OPTIMIZE IT: " << mc->libraryItemName()  << endl;
+	} else{
+		cout << "Build IT: " <<  mc->libraryItemName()  << endl;
+		ofxFlashXFLBuilder* builder;
+		builder = new ofxFlashXFLBuilder();
+		builder->setVerbose( bVerbose );
+		builder->build( xflRoot, libraryItemPath, mc );
+		delete builder;
+		builder = NULL;
+		lastKeyFrameDisplayObject = mc;			
+	}
 	
-	delete builder;
-	builder = NULL;
+
+	
 }
 
 void ofxFlashXFLBuilder :: buildRectangleShape ()
@@ -488,14 +503,26 @@ void ofxFlashXFLBuilder :: addDisplayObjectToFrames ( ofxFlashDisplayObject* dis
     
 	int i = domFrame.index;
 	int t = domFrame.index + domFrame.duration;
-//	for( i; i<t; i++ )
-//	{
+	/*
+	if(displayObject->libraryItemName() == lastKeyFrameDisplayObject->libraryItemName() && 
+	   displayObject->name() == lastKeyFrameDisplayObject->name())
+	{
+		
+		
+	} else {
+	 */
+		//	for( i; i<t; i++ )
+		//	{
         containerMc->gotoAndStop( i + 1 );
 		containerMc->addChild( displayObject, activeLayerIndex );
+		//	}		
 //	}
+
     
     containerMc->gotoAndPlay( 1 );
 	//	cout << "adding MC to frames: " << displayObject->name() << " " << i + 1 <<  endl;
+	
+	//lastKeyFrameDisplayObject = displayObject;
 
 }
 

@@ -156,7 +156,7 @@ void ofxFlashMovieClip :: readTimelineIntoThis(int layerIndex)
 				ofxFlashDisplayObject * targetChild = frame->children[0];
 				ofxFlashDisplayObject * targetOnStage = ((ofxFlashMovieClip*)(this)->getChildByName(targetChild->name()));
 				targetOnStage->matrix( targetChild->matrix() ); // NO GOOD! WE're erasing the original matrix! OOOOOF! Create a vec inside objects and build a tweening system. have the xflbuilder create a tween in the first object instead of copying it over multiple time. then play the tween here (will also save the 'is this a continual frame' issue)
-				if(frameIndex == 0) targetOnStage->matrix( targetChild->originalMatrix() ); // OH NO THIS IS EVEN WORST!!!
+				if( timeline.layers[l]->frames[frameIndex]->_offsetFromKeyframe == 0) targetOnStage->matrix( targetChild->originalMatrix() ); 
 				/*
 				 OK OK, here's what we're doing next: 
 				 xflbuilder learns about continual frames and tells the container who's the keyframe. 
@@ -183,6 +183,7 @@ bool ofxFlashMovieClip :: isThisFrameContinual(ofxFlashDisplayObjectContainer * 
 		ofxFlashDisplayObject *lastchild = lastFrame->children[0];
 		ofxFlashDisplayObject *thischild = thisFrame->children[0];		
 		
+		// !! add condition for non-MC, just don't check lib name if they don't have one
 		if(thischild->typeID == OFX_FLASH_TYPE_MOVIECLIP && lastchild->libraryItemName() == thischild->libraryItemName() 
 		   && lastchild->name() == thischild->name()  )
 		{

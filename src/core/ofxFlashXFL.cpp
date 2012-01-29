@@ -12,7 +12,7 @@
 ofxFlashXFL :: ofxFlashXFL()
 {
 	bLoaded     = false;
-    bVerbose    = true;
+    bVerbose    = false;
 }
 
 ofxFlashXFL :: ~ofxFlashXFL()

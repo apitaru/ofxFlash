@@ -78,4 +78,6 @@ private:
 	string cleanHexString	( string value );
 	int  stringToHex		( string value );
 	
+	ofxFlashMovieClip * lastKeyFrameDisplayObject;
+	
 };
