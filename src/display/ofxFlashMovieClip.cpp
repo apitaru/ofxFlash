@@ -227,7 +227,10 @@ void ofxFlashMovieClip :: addFrameChildren (int layerIndex)
 		child->updateOnFrame();
 		if(child->typeID == OFX_FLASH_TYPE_MOVIECLIP) 
 		{
-			((ofxFlashMovieClip *)child)->gotoAndPlay(1);
+            if(((ofxFlashMovieClip *)child)->bPlay)
+            {
+                ((ofxFlashMovieClip *)child)->gotoAndPlay(1);
+            }
 			//	// cout <<"CHILD ADDED: " << ((ofxFlashMovieClip *)child)->name() <<  " " << 			child->libraryItemName() <<" in " << this->name() << endl;		
 		}
 		// cout << "CHILD ADDED: " << ((ofxFlashMovieClip *)child)->name() <<  " " << 			child->libraryItemName() <<" in " << this->name() << endl;	
